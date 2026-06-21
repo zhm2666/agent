@@ -17,6 +17,7 @@ from .database import DatabaseConnection, SalesRepository
 from .state import State
 from .utils import Config, load_config
 from .mcp import MCPChartClient
+from .logging_factory import setup_logging, get_logger
 
 
 class PredictionAgent:
@@ -25,6 +26,10 @@ class PredictionAgent:
     def __init__(self, config: Optional[Config] = None):
         """初始化Prediction Agent"""
         self.config = config or load_config()
+
+        # 配置日志
+        self._setup_logging()
+        self.logger = get_logger("agent_mcp")
 
         # 初始化LLM客户端
         self.llm_client = self._initialize_llm()
@@ -45,12 +50,15 @@ class PredictionAgent:
         os.makedirs(self.config.output_dir, exist_ok=True)
         os.makedirs(self.config.chart_output_dir, exist_ok=True)
 
-        print(f"Prediction Agent (MCP版) 已初始化")
-        print(f"使用LLM: {self.llm_client.get_model_info()}")
-        print(f"图表服务模式: MCP ({self.mcp_mode})")
+        self.logger.info(f"Prediction Agent (MCP版) 已初始化")
+        self.logger.info(f"使用LLM: {self.llm_client.get_model_info()}")
+        self.logger.info(f"图表服务模式: MCP ({self.mcp_mode})")
+
+    def _setup_logging(self):
+        """配置日志记录（使用日志工厂）"""
+        setup_logging()
 
     def _initialize_llm(self) -> BaseLLM:
-        """初始化LLM客户端"""
         if self.config.default_llm_provider == "deepseek":
             return DeepSeekLLM(
                 api_key=self.config.deepseek_api_key,
@@ -78,9 +86,9 @@ class PredictionAgent:
 
         if self.db_connection.connect():
             self.repository = SalesRepository(self.db_connection)
-            print(f"已连接到数据库: {self.config.mysql_database}")
+            self.logger.info(f"已连接到数据库: {self.config.mysql_database}")
         else:
-            print("警告: 数据库连接失败，将使用模拟数据")
+            self.logger.warning("数据库连接失败，将使用模拟数据")
             self.repository = None
 
     def _initialize_mcp_client(self):
@@ -92,7 +100,7 @@ class PredictionAgent:
             server_url="http://localhost:8000"  # 远程MCP服务器地址
         )
 
-        print(f"MCP图表客户端已初始化 (模式: {self.mcp_mode})")
+        self.logger.debug(f"MCP图表客户端已初始化 (模式: {self.mcp_mode})")
 
     def _initialize_nodes(self):
         """初始化处理节点"""
@@ -126,9 +134,9 @@ class PredictionAgent:
         product_code: Optional[str] = None
     ) -> Dict[str, Any]:
         """执行预测分析"""
-        print(f"\n{'='*60}")
-        print(f"开始预测分析 (MCP版): {query}")
-        print(f"{'='*60}")
+        self.logger.info(f"\n{'='*60}")
+        self.logger.info(f"开始预测分析 (MCP版): {query}")
+        self.logger.info(f"{'='*60}\n")
 
         self.state = State()
         self.state.user_query = query
@@ -152,15 +160,15 @@ class PredictionAgent:
 
             self.state.mark_completed()
 
-            print(f"\n{'='*60}")
-            print("预测分析完成！")
-            print(f"{'='*60}")
+            self.logger.info(f"\n{'='*60}")
+            self.logger.info("预测分析完成！")
+            self.logger.info(f"{'='*60}\n")
 
             return self._build_response()
 
         except Exception as e:
             self.state.mark_error(str(e))
-            print(f"分析过程中发生错误: {str(e)}")
+            self.logger.error(f"分析过程中发生错误: {str(e)}", exc_info=True)
             return {
                 "success": False,
                 "error": str(e),
@@ -169,7 +177,7 @@ class PredictionAgent:
 
     def _step_product_identification(self, query: str, product_code: Optional[str] = None):
         """步骤1: 产品识别"""
-        print(f"\n[步骤 1] 产品识别...")
+        self.logger.info("[步骤 1] 产品识别...")
 
         self.state.set_step("product_identification")
 
@@ -180,7 +188,7 @@ class PredictionAgent:
                 self.state.prediction_state.product_identification.product_code = product.product_code
                 self.state.prediction_state.product_identification.product_name = product.product_name
                 self.state.prediction_state.product_identification.confidence = 1.0
-                print(f"已识别产品: {product.product_name} ({product.product_code})")
+                self.logger.info(f"已识别产品: {product.product_name} ({product.product_code})")
                 return
 
         result = self.product_identification_node.run({"user_query": query})
@@ -194,13 +202,13 @@ class PredictionAgent:
         id_state.alternatives = result.get("alternatives", [])
 
         if id_state.identified:
-            print(f"已识别产品: {id_state.product_name} ({id_state.product_code})")
+            self.logger.info(f"已识别产品: {id_state.product_name} ({id_state.product_code})")
         else:
-            print("未能识别产品")
+            self.logger.warning("未能识别产品")
 
     def _step_data_fetch(self, use_mock_data: bool = False):
         """步骤2: 数据获取"""
-        print(f"\n[步骤 2] 数据获取...")
+        self.logger.info("[步骤 2] 数据获取...")
 
         self.state.set_step("data_fetch")
 
@@ -208,7 +216,7 @@ class PredictionAgent:
         product_name = self.state.prediction_state.product_identification.product_name
 
         if use_mock_data or not self.repository:
-            print("使用模拟数据...")
+            self.logger.info("使用模拟数据...")
             result = self.data_fetch_node.fetch_mock_data(product_code, product_name)
         else:
             result = self.data_fetch_node.run({
@@ -225,11 +233,11 @@ class PredictionAgent:
         fetch_state.error_message = result.get("error_message", "")
 
         if fetch_state.fetched:
-            print(f"数据获取成功: 历史{len(fetch_state.historical_data)}条, 预测{len(fetch_state.future_predictions)}条")
+            self.logger.info(f"数据获取成功: 历史{len(fetch_state.historical_data)}条, 预测{len(fetch_state.future_predictions)}条")
 
     def _step_chart_generation(self):
         """步骤3: 图表生成 (MCP调用)"""
-        print(f"\n[步骤 3] 图表生成 (通过MCP调用)...")
+        self.logger.info("[步骤 3] 图表生成 (通过MCP调用)...")
 
         self.state.set_step("chart_generation")
 
@@ -252,13 +260,13 @@ class PredictionAgent:
         chart_state.chart_id = chart_result.get("chart_id", "")
 
         if chart_state.generated:
-            print(f"MCP图表生成成功: {chart_state.chart_url}")
+            self.logger.info(f"MCP图表生成成功: {chart_state.chart_url}")
         else:
-            print(f"图表生成失败: {chart_result.get('error', '未知错误')}")
+            self.logger.error(f"图表生成失败: {chart_result.get('error', '未知错误')}")
 
     def _step_analysis(self):
         """步骤4: 分析"""
-        print(f"\n[步骤 4] 预测分析...")
+        self.logger.info("[步骤 4] 预测分析...")
 
         self.state.set_step("analysis")
 
@@ -282,7 +290,7 @@ class PredictionAgent:
         analysis_state.key_insights = analysis_result.get("key_insights", [])
         analysis_state.recommendations = analysis_result.get("recommendations", [])
 
-        print("分析完成")
+        self.logger.info("分析完成")
 
     def _build_response(self) -> Dict[str, Any]:
         """构建响应"""
