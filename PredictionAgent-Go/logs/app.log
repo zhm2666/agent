@@ -1,0 +1,13 @@
+{"level":"warn","ts":1782050596.9663062,"logger":"agent","caller":"agent/agent.go:44","msg":"LLM initialization failed, using mock","error":"DeepSeek API key not provided"}
+{"level":"info","ts":1782050596.9668624,"logger":"agent","caller":"agent/agent.go:50","msg":"Prediction Agent initialized","llm_provider":"deepseek","mcp_mode":"local"}
+{"level":"info","ts":1782050596.9668624,"logger":"agent","caller":"agent/agent.go:103","msg":"Starting prediction analysis","query":"预测下季度销售额","chart_type":"combined"}
+{"level":"info","ts":1782050596.9668624,"logger":"agent","caller":"agent/agent.go:138","msg":"[Step 1] Product identification..."}
+{"level":"warn","ts":1782050596.9668624,"logger":"agent","caller":"agent/agent.go:156","msg":"No LLM client available, using mock identification"}
+{"level":"info","ts":1782050596.9681053,"logger":"agent","caller":"agent/agent.go:189","msg":"[Step 2] Data fetch..."}
+{"level":"info","ts":1782050596.9681053,"logger":"agent","caller":"agent/agent.go:213","msg":"Data fetch completed","historical_count":90,"future_count":30}
+{"level":"info","ts":1782050596.9681053,"logger":"agent","caller":"agent/agent.go:221","msg":"[Step 3] Chart generation (MCP)..."}
+{"level":"info","ts":1782050596.9681053,"logger":"mcp.client","caller":"mcp/client.go:46","msg":"MCP chart request","product_name":"Mock Product","chart_type":"combined"}
+{"level":"info","ts":1782050597.0688868,"logger":"agent","caller":"agent/agent.go:254","msg":"Chart generated successfully","url":"/charts/20260621220317.png"}
+{"level":"info","ts":1782050597.0688868,"logger":"agent","caller":"agent/agent.go:262","msg":"[Step 4] Analysis..."}
+{"level":"info","ts":1782050597.0688868,"logger":"agent","caller":"agent/agent.go:291","msg":"Analysis completed"}
+{"level":"info","ts":1782050597.0688868,"logger":"agent","caller":"agent/agent.go:131","msg":"Prediction analysis completed"}
