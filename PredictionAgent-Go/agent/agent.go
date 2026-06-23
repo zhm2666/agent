@@ -7,20 +7,26 @@ import (
 	"prediction-agent/llm"
 	"prediction-agent/logging"
 	"prediction-agent/mcp"
+	"prediction-agent/nodes"
 	"prediction-agent/state"
-	"time"
 
 	"go.uber.org/zap"
 )
 
 // PredictionAgent 预测分析Agent
 type PredictionAgent struct {
-	config       *config.Config
-	logger       *zap.Logger
-	llmClient    llm.LLMProvider
-	mcpClient    *mcp.MCPChartClient
-	agentState   *state.State
-	mcpMode      string
+	config               *config.Config
+	logger               *zap.Logger
+	llmClient           llm.LLMProvider
+	mcpClient           *mcp.MCPChartClient
+	agentState          *state.State
+	mcpMode             string
+	
+	// Nodes
+	productIDNode        *nodes.ProductIdentificationNode
+	dataFetchNode       *nodes.DataFetchNode
+	chartNode           *nodes.ChartNode
+	analysisNode        *nodes.AnalysisNode
 }
 
 // NewPredictionAgent 创建Agent实例
@@ -36,16 +42,19 @@ func NewPredictionAgent(cfg *config.Config) (*PredictionAgent, error) {
 		config:    cfg,
 		logger:    logger,
 		agentState: state.NewState(),
-		mcpMode:    "local",
+		mcpMode:   "local",
 	}
 
 	// 初始化LLM客户端
 	if err := agent.initLLM(); err != nil {
-		logger.Warn("LLM initialization failed, using mock", zap.Error(err))
+		logger.Warn("LLM initialization failed", zap.Error(err))
 	}
 
 	// 初始化MCP客户端
 	agent.mcpClient = mcp.NewMCPChartClient(agent.mcpMode, "http://localhost:8000")
+
+	// 初始化Nodes
+	agent.initNodes()
 
 	logger.Info("Prediction Agent initialized",
 		zap.String("llm_provider", cfg.DefaultLLMProvider),
@@ -79,23 +88,38 @@ func (a *PredictionAgent) initLLM() error {
 	return nil
 }
 
+// initNodes 初始化处理节点
+func (a *PredictionAgent) initNodes() {
+	a.productIDNode = nodes.NewProductIdentificationNode(a.llmClient)
+	a.dataFetchNode = nodes.NewDataFetchNode(a.llmClient)
+	a.chartNode = nodes.NewChartNode(a.llmClient, a.mcpClient)
+	a.analysisNode = nodes.NewAnalysisNode(a.llmClient)
+	
+	a.logger.Info("Nodes initialized",
+		zap.String("product_identification", a.productIDNode.NodeName),
+		zap.String("data_fetch", a.dataFetchNode.NodeName),
+		zap.String("chart", a.chartNode.NodeName),
+		zap.String("analysis", a.analysisNode.NodeName),
+	)
+}
+
 // AnalyzeRequest 分析请求
 type AnalyzeRequest struct {
-	Query         string
-	ChartType     string
-	UseMockData   bool
-	ProductCode   string
+	Query       string
+	ChartType   string
+	UseMockData bool
+	ProductCode string
 }
 
 // AnalyzeResponse 分析响应
 type AnalyzeResponse struct {
-	Success bool              `json:"success"`
-	Product map[string]any    `json:"product"`
-	Data    map[string]any    `json:"data"`
-	Chart   map[string]any    `json:"chart"`
-	Analysis map[string]any   `json:"analysis"`
-	Error   string            `json:"error,omitempty"`
-	State   map[string]any    `json:"state"`
+	Success  bool              `json:"success"`
+	Product  map[string]any    `json:"product"`
+	Data     map[string]any    `json:"data"`
+	Chart    map[string]any    `json:"chart"`
+	Analysis map[string]any    `json:"analysis"`
+	Error    string            `json:"error,omitempty"`
+	State    map[string]any    `json:"state"`
 }
 
 // Analyze 执行预测分析
@@ -119,10 +143,10 @@ func (a *PredictionAgent) Analyze(ctx context.Context, req AnalyzeRequest) Analy
 	}
 
 	// Step 2: 数据获取
-	a.stepDataFetch(req.UseMockData)
+	a.stepDataFetch(ctx, req.UseMockData)
 
 	// Step 3: 图表生成
-	a.stepChartGeneration()
+	a.stepChartGeneration(ctx)
 
 	// Step 4: 分析
 	a.stepAnalysis(ctx)
@@ -151,107 +175,127 @@ func (a *PredictionAgent) stepProductIdentification(ctx context.Context, query, 
 		return
 	}
 
-	// 使用LLM识别产品
-	if a.llmClient == nil {
-		a.logger.Warn("No LLM client available, using mock identification")
+	// 使用节点进行产品识别
+	if a.productIDNode == nil {
+		a.logger.Warn("Product ID node not available, using mock")
 		a.agentState.PredictionState.ProductIdentification = state.ProductIdentificationState{
 			Identified:  true,
 			ProductCode: "MOCK001",
 			ProductName: "Mock Product",
 			Confidence:  0.5,
-			Reasoning:   "Mock identification (no LLM)",
+			Reasoning:   "Mock identification (no node)",
 		}
 		return
 	}
 
-	systemPrompt := `你是一个产品识别助手。根据用户查询识别产品信息。`
-	userPrompt := `用户查询: ` + query + "\n请识别产品并返回JSON格式：{\"product_code\": \"\", \"product_name\": \"\", \"confidence\": 0.0, \"reasoning\": \"\"}"
+	result := a.productIDNode.Run(ctx, map[string]any{
+		"user_query": query,
+	})
 
-	resp, err := a.llmClient.Invoke(ctx, systemPrompt, userPrompt)
-	if err != nil {
-		a.logger.Error("Product identification failed", zap.Error(err))
-		return
-	}
-
-	// 解析LLM响应（简化处理）
 	a.agentState.PredictionState.ProductIdentification = state.ProductIdentificationState{
-		Identified:  true,
-		ProductCode: "IDENTIFIED001",
-		ProductName: "Identified Product",
-		Confidence:  0.8,
-		Reasoning:   resp,
+		Identified:  result.Identified,
+		ProductCode: result.ProductCode,
+		ProductName: result.ProductName,
+		Confidence:  result.Confidence,
+		Reasoning:   result.Reasoning,
 	}
-	a.logger.Info("Product identified", zap.String("product_name", "Identified Product"))
+
+	if result.Identified {
+		a.logger.Info("Product identified", 
+			zap.String("product_name", result.ProductName),
+			zap.Float64("confidence", result.Confidence),
+		)
+	}
 }
 
 // stepDataFetch 步骤2: 数据获取
-func (a *PredictionAgent) stepDataFetch(useMockData bool) {
+func (a *PredictionAgent) stepDataFetch(ctx context.Context, useMockData bool) {
 	a.logger.Info("[Step 2] Data fetch...")
 	a.agentState.SetStep("data_fetch")
 
 	productCode := a.agentState.PredictionState.ProductIdentification.ProductCode
+	productName := a.agentState.PredictionState.ProductIdentification.ProductName
 
-	// 生成模拟数据
-	historicalData := generateMockHistoricalData(productCode)
-	modelPredictions := generateMockPredictions(productCode, len(historicalData))
-	futurePredictions := generateMockFuturePredictions(productCode, 30)
-
-	statistics := map[string]any{
-		"total_sales":    100000.0,
-		"avg_daily_sales": 1000.0,
-		"growth_rate":     0.05,
+	if a.dataFetchNode == nil {
+		a.logger.Warn("Data fetch node not available, using mock data")
+		a.useMockDataFetch(productCode, productName)
+		return
 	}
+
+	result := a.dataFetchNode.Run(ctx, map[string]any{
+		"product_code": productCode,
+		"product_name": productName,
+		"history_days": 90,
+		"future_days": 30,
+	})
 
 	a.agentState.PredictionState.DataFetch = state.DataFetchState{
-		Fetched:           true,
-		HistoricalData:    historicalData,
-		ModelPredictions:  modelPredictions,
-		FuturePredictions: futurePredictions,
-		Statistics:        statistics,
+		Fetched:          result.Fetched,
+		HistoricalData:   result.HistoricalData,
+		ModelPredictions: result.ModelPredictions,
+		FuturePredictions: result.FuturePredictions,
+		Statistics:      result.Statistics,
 	}
 
-	a.logger.Info("Data fetch completed",
-		zap.Int("historical_count", len(historicalData)),
-		zap.Int("future_count", len(futurePredictions)),
-	)
+	if result.Fetched {
+		a.logger.Info("Data fetch completed",
+			zap.Int("historical_count", len(result.HistoricalData)),
+			zap.Int("future_count", len(result.FuturePredictions)),
+		)
+	} else {
+		a.logger.Error("Data fetch failed", zap.String("error", result.ErrorMessage))
+	}
+}
+
+// useMockDataFetch 使用模拟数据
+func (a *PredictionAgent) useMockDataFetch(productCode, productName string) {
+	result := a.dataFetchNode.FetchMockData(productCode, productName, 90, 30)
+	
+	a.agentState.PredictionState.DataFetch = state.DataFetchState{
+		Fetched:          result.Fetched,
+		HistoricalData:   result.HistoricalData,
+		ModelPredictions: result.ModelPredictions,
+		FuturePredictions: result.FuturePredictions,
+		Statistics:      result.Statistics,
+	}
 }
 
 // stepChartGeneration 步骤3: 图表生成
-func (a *PredictionAgent) stepChartGeneration() {
+func (a *PredictionAgent) stepChartGeneration(ctx context.Context) {
 	a.logger.Info("[Step 3] Chart generation (MCP)...")
 	a.agentState.SetStep("chart_generation")
+
+	if a.chartNode == nil {
+		a.logger.Warn("Chart node not available, using mock")
+		a.agentState.PredictionState.ChartGeneration = state.ChartState{
+			Generated: true,
+			ChartType: "combined",
+			ChartURL:  "",
+		}
+		return
+	}
 
 	idState := a.agentState.PredictionState.ProductIdentification
 	fetchState := a.agentState.PredictionState.DataFetch
 
-	// 提取数据
-	dates := extractDates(fetchState.HistoricalData)
-	actualValues := extractValues(fetchState.HistoricalData, "sales")
-	predictedValues := extractValuesFromList(fetchState.ModelPredictions)
-	futureDates := extractDates(fetchState.FuturePredictions)
-	futureValues := extractValuesFromList(fetchState.FuturePredictions)
-
-	// 调用MCP生成图表
-	result := a.mcpClient.PlotSalesForecast(
-		idState.ProductName,
-		dates,
-		actualValues,
-		predictedValues,
-		futureDates,
-		futureValues,
-		a.agentState.ChartType,
-	)
+	result := a.chartNode.Run(ctx, map[string]any{
+		"product_name":      idState.ProductName,
+		"chart_type":       a.agentState.ChartType,
+		"historical_data":   fetchState.HistoricalData,
+		"future_predictions": fetchState.FuturePredictions,
+		"model_predictions": fetchState.ModelPredictions,
+	})
 
 	a.agentState.PredictionState.ChartGeneration = state.ChartState{
-		Generated:    result.Success,
-		ChartType:    result.ChartType,
-		ChartURL:     result.URL,
-		ChartFilePath: result.FilePath,
-		ChartID:      result.ChartID,
+		Generated:    result.Generated,
+		ChartType:   result.ChartType,
+		ChartURL:    result.ChartURL,
+		ChartFilePath: result.ChartFilePath,
+		ChartID:     result.ChartID,
 	}
 
-	if result.Success {
-		a.logger.Info("Chart generated successfully", zap.String("url", result.URL))
+	if result.Generated {
+		a.logger.Info("Chart generated successfully", zap.String("url", result.ChartURL))
 	} else {
 		a.logger.Error("Chart generation failed", zap.String("error", result.Error))
 	}
@@ -262,30 +306,36 @@ func (a *PredictionAgent) stepAnalysis(ctx context.Context) {
 	a.logger.Info("[Step 4] Analysis...")
 	a.agentState.SetStep("analysis")
 
-	idState := a.agentState.PredictionState.ProductIdentification
-	fetchState := a.agentState.PredictionState.DataFetch
-
-	analysisResult := "基于历史数据和预测结果的分析报告。"
-	keyInsights := []string{"销量呈上升趋势", "预测准确度较高"}
-	recommendations := []string{"建议增加库存", "关注节假日促销"}
-
-	if a.llmClient != nil {
-		systemPrompt := `你是一个销售预测分析助手。`
-		userPrompt := `产品: ` + idState.ProductName + `
-历史数据统计: ` + formatStatistics(fetchState.Statistics) + `
-请提供分析结果、关键洞察和建议。`
-
-		resp, err := a.llmClient.Invoke(ctx, systemPrompt, userPrompt)
-		if err == nil {
-			analysisResult = resp
+	if a.analysisNode == nil {
+		a.logger.Warn("Analysis node not available, using mock")
+		a.agentState.PredictionState.Analysis = state.AnalysisState{
+			Analyzed:        true,
+			AnalysisResult:  "基于历史数据和预测结果的分析报告。",
+			KeyInsights:    []string{"销量呈上升趋势", "预测准确度较高"},
+			Recommendations: []string{"建议增加库存", "关注节假日促销"},
 		}
+		return
 	}
 
+	idState := a.agentState.PredictionState.ProductIdentification
+	fetchState := a.agentState.PredictionState.DataFetch
+	chartState := a.agentState.PredictionState.ChartGeneration
+
+	result := a.analysisNode.Run(ctx, map[string]any{
+		"product_name":       idState.ProductName,
+		"product_code":       idState.ProductCode,
+		"user_query":        a.agentState.UserQuery,
+		"historical_data":    fetchState.HistoricalData,
+		"future_predictions": fetchState.FuturePredictions,
+		"statistics":        fetchState.Statistics,
+		"chart_url":         chartState.ChartURL,
+	})
+
 	a.agentState.PredictionState.Analysis = state.AnalysisState{
-		Analyzed:        true,
-		AnalysisResult:  analysisResult,
-		KeyInsights:     keyInsights,
-		Recommendations: recommendations,
+		Analyzed:        result.Analyzed,
+		AnalysisResult:  result.AnalysisResult,
+		KeyInsights:    result.KeyInsights,
+		Recommendations: result.Recommendations,
 	}
 
 	a.logger.Info("Analysis completed")
@@ -301,8 +351,8 @@ func (a *PredictionAgent) buildSuccessResponse() AnalyzeResponse {
 	return AnalyzeResponse{
 		Success: true,
 		Product: map[string]any{
-			"code":      idState.ProductCode,
-			"name":      idState.ProductName,
+			"code":       idState.ProductCode,
+			"name":       idState.ProductName,
 			"confidence": idState.Confidence,
 		},
 		Data: map[string]any{
@@ -311,15 +361,15 @@ func (a *PredictionAgent) buildSuccessResponse() AnalyzeResponse {
 			"statistics":        fetchState.Statistics,
 		},
 		Chart: map[string]any{
-			"url":       chartState.ChartURL,
-			"type":      chartState.ChartType,
+			"url":      chartState.ChartURL,
+			"type":     chartState.ChartType,
 			"filepath":  chartState.ChartFilePath,
-			"chart_id":  chartState.ChartID,
-			"via_mcp":   true,
+			"chart_id": chartState.ChartID,
+			"via_mcp":  true,
 		},
 		Analysis: map[string]any{
-			"result":         analysisState.AnalysisResult,
-			"key_insights":   analysisState.KeyInsights,
+			"result":          analysisState.AnalysisResult,
+			"key_insights":    analysisState.KeyInsights,
 			"recommendations": analysisState.Recommendations,
 		},
 		State: a.agentState.ToMap(),
@@ -360,83 +410,7 @@ func (a *PredictionAgent) LoadState(filepath string) error {
 	return nil
 }
 
-// ============ 辅助函数 ============
-
-func generateMockHistoricalData(productCode string) []map[string]any {
-	data := make([]map[string]any, 90)
-	now := time.Now()
-	for i := 0; i < 90; i++ {
-		date := now.AddDate(0, 0, -90+i).Format("2006-01-02")
-		baseValue := 1000.0 + float64(i)*10
-		data[i] = map[string]any{
-			"date":  date,
-			"sales": baseValue,
-		}
-	}
-	return data
-}
-
-func generateMockPredictions(productCode string, count int) []map[string]any {
-	data := make([]map[string]any, count)
-	now := time.Now()
-	for i := 0; i < count; i++ {
-		date := now.AddDate(0, 0, -count+i).Format("2006-01-02")
-		baseValue := 1000.0 + float64(i)*10
-		data[i] = map[string]any{
-			"date":  date,
-			"predicted": baseValue * 1.05,
-		}
-	}
-	return data
-}
-
-func generateMockFuturePredictions(productCode string, days int) []map[string]any {
-	data := make([]map[string]any, days)
-	now := time.Now()
-	for i := 0; i < days; i++ {
-		date := now.AddDate(0, 0, i+1).Format("2006-01-02")
-		baseValue := 1900.0 + float64(i)*15
-		data[i] = map[string]any{
-			"date":  date,
-			"predicted": baseValue,
-		}
-	}
-	return data
-}
-
-func extractDates(dataList []map[string]any) []string {
-	dates := make([]string, len(dataList))
-	for i, item := range dataList {
-		if date, ok := item["date"].(string); ok {
-			dates[i] = date
-		}
-	}
-	return dates
-}
-
-func extractValues(dataList []map[string]any, key string) []float64 {
-	values := make([]float64, len(dataList))
-	for i, item := range dataList {
-		if val, ok := item[key].(float64); ok {
-			values[i] = val
-		}
-	}
-	return values
-}
-
-func extractValuesFromList(dataList []map[string]any) []float64 {
-	values := make([]float64, len(dataList))
-	for i, item := range dataList {
-		for _, v := range item {
-			if val, ok := v.(float64); ok {
-				values[i] = val
-				break
-			}
-		}
-	}
-	return values
-}
-
-func formatStatistics(stats map[string]any) string {
-	return "Statistics: total_sales=100000, avg=1000, growth=5%"
+// GetState 获取当前状态
+func (a *PredictionAgent) GetState() *state.State {
+	return a.agentState
 }
