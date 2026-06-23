@@ -23,6 +23,7 @@ const textRef = ref<HTMLElement>()
 
 const mdi = new MarkdownIt({
   linkify: true,
+  html: true, // 允许渲染 HTML 标签（如 <img>）
   highlight(code, language) {
     const validLang = !!(language && hljs.getLanguage(language))
     if (validLang) {

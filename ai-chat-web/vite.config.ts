@@ -47,6 +47,11 @@ export default defineConfig((env) => {
             })
           },
         },
+        // 静态资源代理（用于加载跨域图片）
+        '/static': {
+          target: 'http://127.0.0.1:8000',
+          changeOrigin: true,
+        },
       },
     },
     build: {
