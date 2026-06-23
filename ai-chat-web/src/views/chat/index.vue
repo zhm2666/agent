@@ -43,6 +43,10 @@ const prompt = ref<string>('')
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 
+// 模式选择：ask 或 agent
+type ChatMode = 'ask' | 'agent'
+const chatMode = ref<ChatMode>('ask')
+
 // 添加PromptStore
 const promptStore = usePromptStore()
 
@@ -79,6 +83,7 @@ async function onConversation() {
       error: false,
       conversationOptions: null,
       requestOptions: { prompt: message, options: null },
+      mode: chatMode.value,
     },
   )
   scrollToBottom()
@@ -92,6 +97,8 @@ async function onConversation() {
   if (lastContext && usingContext.value)
     options = { ...lastContext }
 
+  const mode = chatMode.value
+
   addChat(
     +uuid,
     {
@@ -101,7 +108,8 @@ async function onConversation() {
       inversion: false,
       error: false,
       conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
+      requestOptions: { prompt: message, options: { ...options }, mode },
+      mode,
     },
   )
   scrollToBottom()
@@ -112,6 +120,7 @@ async function onConversation() {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         prompt: message,
         options,
+        mode, // 传递模式参数
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
           const xhr = event.target
@@ -533,6 +542,23 @@ onUnmounted(() => {
               <SvgIcon icon="ri:chat-history-line" />
             </span>
           </HoverButton>
+          <!-- 模式切换按钮 -->
+          <div class="flex items-center gap-1">
+            <button
+              class="px-2 py-1 text-xs rounded transition"
+              :class="chatMode === 'ask' ? 'bg-[#4b9e5f] text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'"
+              @click="chatMode = 'ask'"
+            >
+              Ask
+            </button>
+            <button
+              class="px-2 py-1 text-xs rounded transition"
+              :class="chatMode === 'agent' ? 'bg-[#4b9e5f] text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'"
+              @click="chatMode = 'agent'"
+            >
+              Agent
+            </button>
+          </div>
           <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput

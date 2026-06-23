@@ -87,6 +87,7 @@ export function fetchChatAPIProcess<T = any>(
   params: {
     prompt: string
     options?: { conversationId?: string; parentMessageId?: string }
+    mode?: 'ask' | 'agent'
     signal?: GenericAbortSignal
     onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
   },
@@ -120,7 +121,8 @@ export function fetchChatAPIProcess<T = any>(
       body: JSON.stringify({
         prompt: params.prompt,
         options: params.options,
-        systemMessage: settingStore.systemMessage
+        systemMessage: settingStore.systemMessage,
+        mode: params.mode, // 传递模式参数
       }),
       signal: params.signal,
     })

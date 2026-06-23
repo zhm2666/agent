@@ -7,7 +7,8 @@ declare namespace Chat {
 		error?: boolean
 		loading?: boolean
 		conversationOptions?: ConversationRequest | null
-		requestOptions: { prompt: string; options?: ConversationRequest | null }
+		requestOptions: { prompt: string; options?: ConversationRequest | null; mode?: 'ask' | 'agent' }
+		mode?: 'ask' | 'agent'
 	}
 
 	interface History {
