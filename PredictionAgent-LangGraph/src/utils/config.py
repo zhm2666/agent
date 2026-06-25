@@ -9,11 +9,15 @@ from dataclasses import dataclass
 from typing import Optional
 
 
+API_KEY = os.environ.get("OPENAI_API_KEY", "sk-hww5ISsBbQ8Q8HyraLFwM5D30tzMEmEAAT1e3qsoR4rhDvE9")
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.moonshot.cn/v1")
+MODEL = os.environ.get("OPENAI_MODEL", "kimi-k2.6")
+
 @dataclass
 class Config:
     default_llm_provider: str = "deepseek"
-    deepseek_api_key: Optional[str] = None
-    deepseek_model: str = "deepseek-chat"
+    deepseek_api_key: Optional[str] = "sk-02912709a6df449c994e3eae7bf9844f"
+    deepseek_model: str = "deepseek-v4-flash"
     openai_api_key: Optional[str] = None
     openai_model: str = "gpt-4o-mini"
 
@@ -32,10 +36,8 @@ class Config:
 
 def load_config(config_file: Optional[str] = None) -> Config:
     config = Config()
-
     config.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY") or config.deepseek_api_key
     config.openai_api_key = os.getenv("OPENAI_API_KEY") or config.openai_api_key
-
     config.mysql_host = os.getenv("MYSQL_HOST", config.mysql_host)
     config.mysql_port = int(os.getenv("MYSQL_PORT", str(config.mysql_port)))
     config.mysql_user = os.getenv("MYSQL_USER", config.mysql_user)

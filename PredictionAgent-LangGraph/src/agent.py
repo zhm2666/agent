@@ -33,13 +33,8 @@ class PredictionAgent:
         os.makedirs(self.config.output_dir, exist_ok=True)
 
     def _initialize_dependencies(self) -> None:
-        try:
-            from PredictionAgent_Demo.src.database import DatabaseConnection, SalesRepository
-        except ImportError as exc:
-            raise ImportError(
-                "LangGraph 版本复用了 PredictionAgent-Demo 的数据库模块，"
-                "请确保 PredictionAgent-Demo 在 Python 路径中。"
-            ) from exc
+        self.repository = None
+        self.mcp_client = None
 
         db_config = {
             "host": self.config.mysql_host,
@@ -48,20 +43,15 @@ class PredictionAgent:
             "password": self.config.mysql_password,
             "database": self.config.mysql_database,
         }
-        self.db_connection = DatabaseConnection(**db_config)
-        if self.db_connection.connect():
-            self.repository: Optional[Any] = SalesRepository(self.db_connection)
-        else:
-            self.repository = None
 
-        self.mcp_client = self._create_mcp_client()
-
-    def _create_mcp_client(self) -> Optional[Any]:
         try:
-            from PredictionAgent_Demo.src.mcp import MCPChartClient
-            return MCPChartClient(mode="local")
+            import mysql.connector
+
+            connection = mysql.connector.connect(**db_config)
+            connection.close()
+            self.repository = _DatabaseRepository(db_config)
         except Exception:
-            return None
+            self.repository = None
 
     def analyze(
         self,
@@ -88,16 +78,13 @@ class PredictionAgent:
         Returns:
             分析结果字典
         """
-        if use_mock_data or self.repository is None:
-            repository = None
-        else:
-            repository = self.repository
+        repository = None if use_mock_data else self.repository
 
         initial_state: AgentState = {
             "user_query": query,
             "chart_type": chart_type,
             "prediction_state": {
-                "step": "product_identification" if not product_code else "product_identification",
+                "step": "product_identification",
                 "product_identification": self._initial_identification(product_code),
                 "data_fetch": self._initial_data_fetch(),
                 "chart_generation": self._initial_chart_generation(),
@@ -142,10 +129,7 @@ class PredictionAgent:
         """
         流式执行分析，便于做进度展示。
         """
-        if use_mock_data or self.repository is None:
-            repository = None
-        else:
-            repository = self.repository
+        repository = None if use_mock_data else self.repository
 
         initial_state: AgentState = {
             "user_query": query,
@@ -268,7 +252,10 @@ class PredictionAgent:
         chart_generation = prediction_state.get("chart_generation", {})
         analysis = prediction_state.get("analysis", {})
 
-        success = prediction_state.get("step") == "completed" and identification.get("identified")
+        success = (
+            prediction_state.get("step") == "analysis"
+            and identification.get("identified")
+        )
         return {
             "success": success,
             "product": {
@@ -312,6 +299,188 @@ class PredictionAgent:
     def _now_iso() -> str:
         from datetime import datetime
         return datetime.now().isoformat()
+
+
+class _DatabaseRepository:
+    """简化版数据库仓库，只实现节点需要用到的几个方法。"""
+
+    def __init__(self, db_config: Dict[str, Any]):
+        import mysql.connector
+        self._db_config = db_config
+        self._conn = mysql.connector.connect(**db_config)
+
+    def get_all_products(self):
+        import mysql.connector
+        cursor = self._conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM products ORDER BY product_name")
+        rows = cursor.fetchall()
+        cursor.close()
+        return [_Product.from_dict(r) for r in rows]
+
+    def get_product_by_code(self, code: str):
+        import mysql.connector
+        cursor = self._conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM products WHERE product_code = %s", (code,))
+        row = cursor.fetchone()
+        cursor.close()
+        return _Product.from_dict(row) if row else None
+
+    def get_product_analysis_data(self, product_code: str, history_days: int = 90, future_days: int = 30):
+        from datetime import date, timedelta
+
+        product = self.get_product_by_code(product_code)
+        if not product:
+            raise ValueError(f"产品不存在: {product_code}")
+
+        today = date.today()
+        start_date = today - timedelta(days=history_days)
+
+        import mysql.connector
+        cursor = self._conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT * FROM sales_data WHERE product_code = %s AND sale_date >= %s ORDER BY sale_date",
+            (product_code, start_date),
+        )
+        sales_history = [_SalesData.from_dict(r) for r in cursor.fetchall()]
+
+        cursor.execute(
+            "SELECT * FROM prediction_results WHERE product_code = %s AND prediction_date >= %s AND prediction_date <= %s",
+            (product_code, start_date, today),
+        )
+        model_predictions = [_PredictionResult.from_dict(r) for r in cursor.fetchall()]
+
+        cursor.execute(
+            "SELECT * FROM prediction_results WHERE product_code = %s AND prediction_date > %s",
+            (product_code, today),
+        )
+        future_predictions = [_PredictionResult.from_dict(r) for r in cursor.fetchall()]
+
+        cursor.close()
+
+        return _ProductAnalysisData(
+            product=product,
+            sales_history=sales_history,
+            model_predictions=model_predictions,
+            future_predictions=future_predictions,
+        )
+
+    def get_product_statistics(self, product_code: str, days: int = 30):
+        from datetime import date, timedelta
+
+        today = date.today()
+        start_date = today - timedelta(days=days)
+        mid_date = start_date + timedelta(days=days // 2)
+
+        import mysql.connector
+        cursor = self._conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT AVG(daily_total) as avg_daily_sales FROM ("
+            "  SELECT SUM(quantity) as daily_total FROM sales_data "
+            "  WHERE product_code = %s AND sale_date >= %s GROUP BY sale_date"
+            ") as daily_sales",
+            (product_code, start_date),
+        )
+        row = cursor.fetchone()
+        avg_daily = row["avg_daily_sales"] if row else 0
+
+        cursor.execute(
+            "SELECT "
+            "  SUM(CASE WHEN sale_date < %s THEN quantity ELSE 0 END) as first_half, "
+            "  SUM(CASE WHEN sale_date >= %s THEN quantity ELSE 0 END) as second_half "
+            "FROM sales_data WHERE product_code = %s AND sale_date >= %s",
+            (mid_date, mid_date, product_code, start_date),
+        )
+        row = cursor.fetchone()
+        first = row["first_half"] or 0
+        second = row["second_half"] or 0
+        trend_change = ((second - first) / first) * 100 if first > 0 else 0
+
+        cursor.close()
+
+        return {
+            "product_code": product_code,
+            "period_days": days,
+            "avg_daily_sales": round(avg_daily, 2) if avg_daily else 0,
+            "trend_change_percent": round(trend_change, 2),
+            "trend_direction": "up" if trend_change > 5 else ("down" if trend_change < -5 else "stable"),
+        }
+
+
+class _Product:
+    def __init__(self, product_code: str, product_name: str,
+                 category: str = "", description: str = ""):
+        self.product_code = product_code
+        self.product_name = product_name
+        self.category = category
+        self.description = description
+
+    @classmethod
+    def from_dict(cls, row: dict):
+        if row is None:
+            return None
+        return cls(
+            product_code=row.get("product_code", ""),
+            product_name=row.get("product_name", ""),
+            category=row.get("category", ""),
+            description=row.get("description", ""),
+        )
+
+    def to_dict(self):
+        return {
+            "product_code": self.product_code,
+            "product_name": self.product_name,
+            "category": self.category,
+            "description": self.description,
+        }
+
+
+class _SalesData:
+    def __init__(self, product_code: str, sale_date, quantity: int, price=0.0, region=""):
+        self.product_code = product_code
+        self.sale_date = sale_date
+        self.quantity = quantity
+        self.price = price
+        self.region = region
+
+    @classmethod
+    def from_dict(cls, row: dict):
+        return cls(
+            product_code=row.get("product_code", ""),
+            sale_date=row.get("sale_date"),
+            quantity=row.get("quantity", 0),
+            price=row.get("price", 0.0),
+            region=row.get("region", ""),
+        )
+
+
+class _PredictionResult:
+    def __init__(self, product_code: str, prediction_date, predicted_value: float,
+                 confidence: float = 0.0, model_type: str = ""):
+        self.product_code = product_code
+        self.prediction_date = prediction_date
+        self.predicted_value = predicted_value
+        self.confidence = confidence
+        self.model_type = model_type
+
+    @classmethod
+    def from_dict(cls, row: dict):
+        return cls(
+            product_code=row.get("product_code", ""),
+            prediction_date=row.get("prediction_date"),
+            predicted_value=row.get("predicted_value", 0.0),
+            confidence=row.get("confidence", 0.0),
+            model_type=row.get("model_type", ""),
+        )
+
+
+class _ProductAnalysisData:
+    def __init__(self, product, sales_history, model_predictions, future_predictions):
+        self.product = product
+        self.sales_history = sales_history
+        self.model_predictions = model_predictions
+        self.future_predictions = future_predictions
 
 
 def create_agent(config_file: Optional[str] = None) -> PredictionAgent:

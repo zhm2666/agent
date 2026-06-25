@@ -7,6 +7,9 @@
 import json
 from typing import Any, Dict, List, Optional
 
+from ..llms.factory import create_llm_client
+from ..utils.config import load_config
+
 
 def analysis_node(state: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
     """
@@ -14,7 +17,11 @@ def analysis_node(state: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
 
     LangGraph 只会传 state；额外 kwargs 是为了兼容 _wrap 固定注入的参数。
     """
-    llm_client = _create_llm_client()
+    try:
+        llm_client = create_llm_client(load_config())
+    except Exception:
+        llm_client = _create_direct_llm_client()
+
     prediction_state = state.get("prediction_state", {})
     identification = prediction_state.get("product_identification", {})
     data_fetch = prediction_state.get("data_fetch", {})
@@ -83,13 +90,49 @@ def analysis_node(state: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
     }
 
 
-def _create_llm_client():
+def _create_direct_llm_client():
+    """直接创建 LLM 客户端，不依赖 PredictionAgent-Demo 模块。"""
     try:
-        from src.llms.factory import create_llm_client as _factory
-        return _factory()
-    except Exception:
-        from PredictionAgent_Demo.src.llms import DeepSeekLLM
-        return DeepSeekLLM()
+        from openai import OpenAI
+        import os
+
+        api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("未找到 API Key，请设置 DEEPSEEK_API_KEY 或 OPENAI_API_KEY 环境变量")
+
+        if os.getenv("DEEPSEEK_API_KEY"):
+            client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.deepseek.com"
+            )
+            model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+        else:
+            client = OpenAI(api_key=api_key)
+            model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+        return _OpenAIClient(client, model)
+    except ImportError as exc:
+        raise ImportError("请安装 openai 库: pip install openai") from exc
+
+
+class _OpenAIClient:
+    """简化版 LLM 客户端，仅实现 invoke 方法。"""
+
+    def __init__(self, client, model: str):
+        self.client = client
+        self.model = model
+
+    def invoke(self, system_prompt: str, user_prompt: str, **kwargs) -> str:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=kwargs.get("temperature", 0.7),
+            max_tokens=kwargs.get("max_tokens", 4000),
+        )
+        return response.choices[0].message.content
 
 
 def _extract_keywords(text: str, keywords: List[str]) -> List[str]:

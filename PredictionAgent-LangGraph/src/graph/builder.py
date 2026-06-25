@@ -2,7 +2,7 @@
 LangGraph 图构建器
 
 把 PredictionAgent-Demo 的线性流程组装成 LangGraph StateGraph，
-保留原有节点实现，只替换“顺序调用”为“图执行 + 条件边 + 检查点”。
+保留原有节点实现，只替换"顺序调用"为"图执行 + 条件边 + 检查点"。
 """
 
 from typing import Any, Dict, Optional
@@ -16,14 +16,8 @@ from ..nodes import (
     data_fetch_node,
     chart_node,
     analysis_node,
-    reflection_node,
 )
-from .conditional_routing import (
-    is_terminal,
-    next_step,
-    should_continue_from_analysis,
-    should_retry_step,
-)
+from .conditional_routing import should_retry_or_end
 
 
 def create_prediction_graph(
@@ -32,7 +26,28 @@ def create_prediction_graph(
     checkpointer: Optional[Any] = None,
 ) -> StateGraph:
     """
-    创建预测分析 LangGraph。
+    创建预测分析 LangGraph
+
+    图结构：
+
+        __start__
+            │
+            ▼
+    product_identification
+            │
+            ▼
+         data_fetch
+            │
+            ▼
+      chart_generation
+            │
+            ▼
+         analysis ──────► should_retry_or_end ◄──┐
+            │                                     │
+            │  (validation passed)                │
+            ▼                                     │
+          END ◄──────────────────────────────────┘
+                   (validation failed & retries exhausted)
 
     Args:
         repository: 销售数据仓库，可选
@@ -60,26 +75,25 @@ def create_prediction_graph(
         "analysis",
         _wrap(analysis_node),
     )
-    builder.add_node(
-        "reflection",
-        _wrap(reflection_node),
-    )
 
+    # 起始边
     builder.add_edge("__start__", "product_identification")
 
+    # 线性流程边
     builder.add_edge("product_identification", "data_fetch")
     builder.add_edge("data_fetch", "chart_generation")
     builder.add_edge("chart_generation", "analysis")
 
+    # 分析节点的条件边：验证通过则结束，验证失败则重试
     builder.add_conditional_edges(
         "analysis",
-        should_continue_from_analysis,
+        should_retry_or_end,
         {
+            "END": END,
             "product_identification": "product_identification",
             "data_fetch": "data_fetch",
             "chart_generation": "chart_generation",
             "analysis": "analysis",
-            "END": END,
         },
     )
 

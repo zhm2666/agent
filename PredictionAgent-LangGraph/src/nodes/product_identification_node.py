@@ -6,16 +6,17 @@
 接受并返回部分状态字段。
 """
 
+import json
+import os
 from typing import Any, Dict, List, Optional
 
-from ..llms.factory import create_llm_client
-from ..utils.config import load_config
+from openai import OpenAI
 
 
 def product_identification_node(
     state: Dict[str, Any],
     repository: Optional[Any] = None,
-    config: Optional[Any] = None,
+    **kwargs: Any,
 ) -> Dict[str, Any]:
     """
     执行产品识别，只更新 product_identification 子状态。
@@ -23,9 +24,7 @@ def product_identification_node(
     Args:
         state: 当前 AgentState
         repository: 销售数据仓库，可选
-        config: 配置，可选
     """
-    llm_client = create_llm_client(config)
     user_query = state.get("user_query", "")
 
     # 1. 优先检查是否已直接指定产品代码
@@ -98,9 +97,9 @@ def product_identification_node(
     user_prompt = f"用户问题: {user_query}"
 
     try:
-        response = llm_client.invoke(system_prompt, user_prompt)
+        response = _call_llm(system_prompt, user_prompt)
         result = _parse_response(response)
-    except Exception as exc:  # pragma: no cover - 兜底
+    except Exception as exc:
         return {
             "prediction_state": {
                 **state.get("prediction_state", {}),
@@ -156,7 +155,7 @@ def _parse_response(response: str) -> Dict[str, Any]:
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
             cleaned = "\n".join(lines[1:-1] if cleaned.endswith("```") else lines[1:])
-        result = __import__("json").loads(cleaned)
+        result = json.loads(cleaned)
         return {
             "identified": result.get("identified", False),
             "product_code": result.get("product_code", ""),
@@ -176,7 +175,9 @@ def _parse_response(response: str) -> Dict[str, Any]:
         }
 
 
-def _validate_and_enrich_result(result: Dict[str, Any], candidates: List[Dict[str, Any]]) -> None:
+def _validate_and_enrich_result(
+    result: Dict[str, Any], candidates: List[Dict[str, Any]]
+) -> None:
     product_code = result.get("product_code", "")
     for candidate in candidates:
         if candidate.get("product_code") == product_code:
@@ -201,3 +202,31 @@ def _validate_and_enrich_result(result: Dict[str, Any], candidates: List[Dict[st
             }
             for c in candidates[:4]
         ]
+
+
+def _call_llm(system_prompt: str, user_prompt: str) -> str:
+    """统一 LLM 调用，自动选择 DeepSeek 或 OpenAI。"""
+    api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("请设置 DEEPSEEK_API_KEY 或 OPENAI_API_KEY 环境变量")
+
+    if os.getenv("DEEPSEEK_API_KEY"):
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.deepseek.com"
+        )
+        model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+    else:
+        client = OpenAI(api_key=api_key)
+        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.7,
+        max_tokens=4000,
+    )
+    return response.choices[0].message.content

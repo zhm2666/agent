@@ -1,9 +1,8 @@
 """
 反思节点
 
-在 LangGraph 里，不再手写 while/for 做重试，
-而是把“验证失败后是否重试”写成图里的条件边。
-这个节点负责执行一次验证，并把结果写回状态。
+在 LangGraph 里，验证失败后的重试由条件边决定，
+这个节点负责执行一次验证，并把结果写回 reflection 状态。
 """
 
 from typing import Any, Dict, Optional
@@ -12,6 +11,7 @@ from typing import Any, Dict, Optional
 def reflection_node(
     state: Dict[str, Any],
     evaluator: Optional[Any] = None,
+    **kwargs: Any,
 ) -> Dict[str, Any]:
     """
     对当前步骤执行结果进行验证，并更新 reflection 状态。
@@ -43,20 +43,21 @@ def reflection_node(
     return {"reflection": reflection_state}
 
 
-def _collect_step_io(state: Dict[str, Any], step: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
+def _collect_step_io(
+    state: Dict[str, Any], step: str
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
     prediction_state = state.get("prediction_state", {})
     input_data = {"user_query": state.get("user_query", "")}
     if step == "product_identification":
-        output_data = prediction_state.get("product_identification", {}).copy()
+        output_data = dict(prediction_state.get("product_identification", {}))
     elif step == "data_fetch":
-        output_data = prediction_state.get("data_fetch", {}).copy()
+        output_data = dict(prediction_state.get("data_fetch", {}))
     elif step == "chart_generation":
-        output_data = prediction_state.get("chart_generation", {}).copy()
+        output_data = dict(prediction_state.get("chart_generation", {}))
     elif step == "analysis":
-        output_data = prediction_state.get("analysis", {}).copy()
+        output_data = dict(prediction_state.get("analysis", {}))
     else:
         output_data = {}
-
     return input_data, output_data
 
 
@@ -68,7 +69,7 @@ def _build_reflection_state(
     validation: Optional[Any],
 ) -> Dict[str, Any]:
     records = list(current_reflection.get("records", []))
-    record = {
+    records.append({
         "step": step,
         "timestamp": _now_iso(),
         "input_data": input_data,
@@ -77,13 +78,11 @@ def _build_reflection_state(
         "retry_count": len(records),
         "final_action": "",
         "notes": "",
-    }
-    records.append(record)
+    })
 
     reflection_count = current_reflection.get("reflection_count", 0) + 1
-    is_reflecting = True
-
     validation_dict = _serialize_validation(validation)
+
     summary = list(current_reflection.get("reflection_summary", []))
     if validation_dict and not validation_dict.get("is_valid", True):
         summary.append(f"[{step}] {validation_dict.get('error_message', '验证失败')}")
@@ -93,8 +92,10 @@ def _build_reflection_state(
         "reflection_count": reflection_count,
         "max_reflections": current_reflection.get("max_reflections", 5),
         "current_validation": validation_dict,
-        "retry_strategy": current_reflection.get("retry_strategy", _default_retry_strategy()),
-        "is_reflecting": is_reflecting,
+        "retry_strategy": current_reflection.get(
+            "retry_strategy", _default_retry_strategy()
+        ),
+        "is_reflecting": True,
         "reflection_summary": summary,
         "records": records,
     }

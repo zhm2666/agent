@@ -51,5 +51,4 @@ def load_config(config_file: Optional[str] = None) -> Config:
 
     config.chart_output_dir = os.getenv("CHART_OUTPUT_DIR", config.chart_output_dir)
     config.chart_base_url = os.getenv("CHART_BASE_URL", config.chart_base_url)
-
     return config
