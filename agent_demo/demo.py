@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 设置 OpenTelemetry
-os.environ.setdefault("LANGSMITH_TRACING", "true")
+# 注意：不用 LangSmith 的话这行可以删，避免混淆
+# os.environ.setdefault("LANGSMITH_TRACING", "true")
 
 from opentelemetry import trace
 from langgraph.types import Command
@@ -14,9 +14,10 @@ from langgraph.types import Command
 # 初始化 OpenTelemetry
 from otel_setup import init_opentelemetry
 
-otlp_endpoint = os.getenv("OTLP_ENDPOINT", "http://localhost:4317")
+# gRPC endpoint 不带 http:// 前缀
+otlp_endpoint = os.getenv("OTLP_ENDPOINT", "localhost:4317")
 shutdown = init_opentelemetry(
-    service_name="agent-demo-demo",
+    service_name="agent-demo",
     service_version="1.0.0",
     otlp_endpoint=otlp_endpoint,
 )
@@ -35,7 +36,7 @@ def main():
 
     print("=" * 55)
     print("LangGraph Interrupt Demo: 翻译质检 + 人工审核")
-    print("📊 OpenTelemetry 分布式追踪已启用")
+    print("📊 OpenTelemetry 分布式追踪已启用 → Jaeger :16686")
     print("=" * 55)
 
     initial_state = {
@@ -46,7 +47,13 @@ def main():
         "human_decision": "",
     }
 
-    with tracer.start_as_current_span("demo.chat", attributes={"thread.id": thread_id}):
+    with tracer.start_as_current_span("demo.chat", attributes={"thread.id": thread_id}) as span:
+        # ---- 获取 trace_id（在 with 块内！）----
+        ctx = span.get_span_context()
+        if ctx.is_valid:
+            trace_id = format(ctx.trace_id, "032x")
+            print(f"📊 Trace ID: {trace_id}")
+
         # ---- 第一次启动 ----
         print("\n📤 启动翻译...\n")
         result = graph.invoke(initial_state, config=config)
@@ -82,13 +89,7 @@ def main():
     print(f"  质量: {result.get('quality')}")
     print(f"  人工决定: {result.get('human_decision')}")
 
-    # 获取 trace ID
-    span = trace.get_current_span()
-    if span:
-        ctx = span.get_span_context()
-        if ctx.is_valid:
-            print(f"\n📊 Trace ID: {format(ctx.trace_id, '032x')}")
-
+    # 确保 trace 全部 flush 后再退出
     shutdown()
 
 

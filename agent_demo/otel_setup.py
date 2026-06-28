@@ -6,19 +6,28 @@ import os
 from opentelemetry import trace, metrics
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.trace.sampling import AlwaysOnSampler
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.propagate import set_global_textmap_propaginator
-from opentelemetry.propagator.tracecontext import TraceContextTextMapPropagator
-from opentelemetry.propagators.baggage import BaggagePropagator
+from opentelemetry.propagate import set_global_textmap
+from opentelemetry.propagators.composite import CompositePropagator
+# from opentelemetry.propagators.tracecontext import TraceContextTextMapPropagator
+# 新版（1.20+）正确路径
+# from opentelemetry.sdk.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from typing import Optional, Callable
 
 # Singleton shutdown functions
 _tracer_shutdown: Optional[Callable] = None
 _meter_shutdown: Optional[Callable] = None
+
+
+def _clean_endpoint(endpoint: str) -> str:
+    """剥掉 http:// 或 https:// 前缀，gRPC exporter 不需要"""
+    for prefix in ("http://", "https://"):
+        if endpoint.startswith(prefix):
+            return endpoint[len(prefix):]
+    return endpoint
 
 
 def init_opentelemetry(
@@ -32,7 +41,7 @@ def init_opentelemetry(
     Args:
         service_name: Name of the service
         service_version: Version of the service
-        otlp_endpoint: OTLP collector endpoint (e.g., "http://localhost:4317")
+        otlp_endpoint: OTLP collector endpoint (e.g., "http://localhost:4317" or "localhost:4317")
 
     Returns:
         Shutdown function to be called on application shutdown
@@ -46,17 +55,16 @@ def init_opentelemetry(
     })
 
     # Initialize TracerProvider
-    tracer_provider = TracerProvider(
-        sampler=AlwaysOnSampler(),
-        resource=resource,
-    )
+    # 不指定 sampler，默认就是 ParentBased(AlwaysOn)，全采样
+    tracer_provider = TracerProvider(resource=resource)
 
-    # Add OTLP exporter if endpoint is provided
+    # Add OTLP trace exporter if endpoint is provided
     if otlp_endpoint:
         try:
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+            clean_endpoint = _clean_endpoint(otlp_endpoint)
             otlp_exporter = OTLPSpanExporter(
-                endpoint=otlp_endpoint,
+                endpoint=clean_endpoint,
                 insecure=True,
             )
             tracer_provider.add_span_processor(
@@ -73,8 +81,9 @@ def init_opentelemetry(
     if otlp_endpoint:
         try:
             from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+            clean_endpoint = _clean_endpoint(otlp_endpoint)
             metric_exporter = OTLPMetricExporter(
-                endpoint=otlp_endpoint,
+                endpoint=clean_endpoint,
                 insecure=True,
             )
             metric_reader = PeriodicExportingMetricReader(
@@ -90,13 +99,13 @@ def init_opentelemetry(
 
     metrics.set_meter_provider(meter_provider)
 
-    # Initialize propagator (W3C TraceContext + Baggage)
-    set_global_textmap_propaginator(
-        CompositePropagator([
-            TraceContextTextMapPropagator(),
-            BaggagePropagator(),
-        ])
-    )
+    # # Initialize propagator (W3C TraceContext + Baggage)
+    # set_global_textmap(
+    #     CompositePropagator([
+    #         TraceContextTextMapPropagator(),
+    #         W3CBaggagePropagator(),
+    #     ])
+    # )
 
     def shutdown():
         """Shutdown both providers."""
@@ -105,22 +114,6 @@ def init_opentelemetry(
 
     _tracer_shutdown = shutdown
     return shutdown
-
-
-class CompositePropagator:
-    """Composite propagator combining multiple propagators."""
-
-    def __init__(self, propagators):
-        self.propagators = propagators
-
-    def inject(self, carrier, context=None):
-        for propagator in self.propagators:
-            propagator.inject(carrier, context)
-
-    def extract(self, carrier, context=None):
-        for propagator in self.propagators:
-            context = propagator.extract(carrier, context)
-        return context
 
 
 def get_tracer(name: str = "agent-demo") -> trace.Tracer:
