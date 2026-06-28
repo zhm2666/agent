@@ -58,7 +58,6 @@ except ImportError:
 
 class TracingConfig:
     """追踪配置"""
-    
     # LangSmith 配置
     LANGSMITH_TRACING: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
     LANGSMITH_API_KEY: str = os.getenv("LANGSMITH_API_KEY", "")
