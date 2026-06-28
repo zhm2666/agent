@@ -7,7 +7,10 @@
 
 from typing import Any, Dict, Optional
 
+from ..tracing import trace_node
 
+
+@trace_node("reflection")
 def reflection_node(
     state: Dict[str, Any],
     evaluator: Optional[Any] = None,

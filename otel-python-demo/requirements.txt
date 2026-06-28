@@ -1,0 +1,30 @@
+# OpenTelemetry Python Demo - Distributed Tracing
+
+# Core OpenTelemetry
+opentelemetry-api>=1.22.0
+opentelemetry-sdk>=1.22.0
+
+# Tracing
+opentelemetry-exporter-otlp>=1.22.0
+opentelemetry-instrumentation-flask>=0.43b0
+opentelemetry-instrumentation-requests>=0.43b0
+opentelemetry-instrumentation-grpc>=0.43b0
+
+# Metrics
+opentelemetry-exporter-prometheus>=0.43b0
+
+# Propagators
+opentelemetry-propagator-b3>=1.22.0
+opentelemetry-propagator-jaeger>=1.22.0
+
+# gRPC
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+protobuf>=4.25.0
+
+# Web framework for demos
+flask>=3.0.0
+requests>=2.31.0
+
+# Prometheus (for metrics)
+prometheus-client>=0.19.0

@@ -15,7 +15,10 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 
+from ..tracing import trace_node
 
+
+@trace_node("chart_generation")
 def chart_node(
     state: Dict[str, Any],
     mcp_client: Optional[Any] = None,

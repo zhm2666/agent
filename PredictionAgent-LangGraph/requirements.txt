@@ -20,6 +20,21 @@ uvicorn>=0.23.0
 numpy>=1.24.0
 pydantic>=2.0.0
 rich>=13.0.0
+python-dotenv>=1.0.0
 
 # MCP 协议（可选）
 mcp>=1.0.0
+
+# ============ 分布式追踪相关 ============
+# LangSmith - 分布式追踪平台（可选，推荐）
+langsmith>=0.1.0
+
+# OpenTelemetry - 核心
+opentelemetry-api>=1.22.0
+opentelemetry-sdk>=1.22.0
+
+# OpenTelemetry - 导出器（同时支持 gRPC 和 HTTP）
+opentelemetry-exporter-otlp>=1.22.0
+
+# OpenTelemetry - 自动化插桩（可选）
+opentelemetry-instrumentation-openai>=0.43b0

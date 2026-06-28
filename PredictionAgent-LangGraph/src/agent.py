@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 from .graph.builder import create_prediction_graph
 from .state.prediction_state import AgentState
 from .utils.config import Config, load_config
+from .tracing import traceable, init_tracing, TracingConfig
 
 
 class PredictionAgent:
@@ -25,12 +26,24 @@ class PredictionAgent:
     def __init__(self, config: Optional[Config] = None) -> None:
         self.config = config or load_config()
         self._initialize_dependencies()
+        self._initialize_tracing()
         self.app = create_prediction_graph(
             repository=self.repository,
             mcp_client=self.mcp_client,
         )
         os.makedirs(self.config.chart_output_dir, exist_ok=True)
         os.makedirs(self.config.output_dir, exist_ok=True)
+
+    def _initialize_tracing(self) -> None:
+        """初始化分布式追踪系统"""
+        if TracingConfig.is_enabled():
+            init_tracing(
+                service_name="prediction-agent",
+                use_langsmith=TracingConfig.LANGSMITH_TRACING,
+            )
+            print(f"[PredictionAgent] Tracing initialized: "
+                  f"LangSmith={TracingConfig.LANGSMITH_TRACING}, "
+                  f"OTEL={TracingConfig.USE_OTEL}")
 
     def _initialize_dependencies(self) -> None:
         self.repository = None
@@ -53,6 +66,7 @@ class PredictionAgent:
         except Exception:
             self.repository = None
 
+    @traceable(name="agent.analyze", tags=["prediction-agent", "main"])
     def analyze(
         self,
         query: str,
@@ -116,6 +130,7 @@ class PredictionAgent:
                 "state": self._serialize_state(initial_state),
             }
 
+    @traceable(name="agent.stream_analysis", tags=["prediction-agent", "stream"])
     def stream_analysis(
         self,
         query: str,
@@ -128,6 +143,7 @@ class PredictionAgent:
     ):
         """
         流式执行分析，便于做进度展示。
+        注意：装饰器会捕获第一个参数（self）作为 metadata，会被覆盖。
         """
         repository = None if use_mock_data else self.repository
 

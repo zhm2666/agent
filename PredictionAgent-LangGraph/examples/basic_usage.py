@@ -6,6 +6,10 @@
 
 import sys
 import os
+from dotenv import load_dotenv
+
+# 加载 .env 环境变量
+load_dotenv()
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 

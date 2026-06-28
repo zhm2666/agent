@@ -4,10 +4,63 @@
 
 ## 快速开始
 
+### 1. 安装依赖
+
 ```bash
+cd PredictionAgent-LangGraph
 pip install -r requirements.txt
-python examples/basic_usage.py
 ```
+
+### 2. 配置环境变量
+
+有两种方式：
+
+**方式 A：使用 .env 文件（推荐）**
+
+```bash
+cp .env.example .env
+# 编辑 .env，填入你的 API Key
+```
+
+**方式 B：设置环境变量**
+
+```bash
+# LLM 配置（二选一）
+export DEEPSEEK_API_KEY=sk-xxx
+export DEEPSEEK_MODEL=deepseek-chat
+
+# 或者
+export OPENAI_API_KEY=sk-xxx
+export OPENAI_MODEL=gpt-4o-mini
+
+# 数据库配置（可选，缺省则使用模拟数据）
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+export MYSQL_USER=root
+export MYSQL_PASSWORD=xxx
+export MYSQL_DATABASE=prediction_db
+```
+
+### 3. 运行示例
+
+```bash
+# 基础示例
+python examples/basic_usage.py
+
+# 高级示例（多轮对话、流式执行等）
+python examples/advanced_usage.py
+```
+
+### 4. 启用分布式追踪（可选）
+
+```bash
+# 编辑 .env
+USE_OTEL=true
+OTLP_ENDPOINT=http://localhost:4318
+LANGSMITH_API_KEY=your-langsmith-key
+```
+
+详细配置请参考 [TRACING_GUIDE.md](TRACING_GUIDE.md)
 
 ## 与原版对比
 

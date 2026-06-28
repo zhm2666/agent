@@ -1,0 +1,22 @@
+syntax = "proto3";
+package strsvc;
+option go_package = "strsvc/proto";
+
+message CountRequest {
+  string str = 1;
+}
+message CountReply {
+  int64 v = 1;
+}
+
+message UppercaseRequest {
+  string str = 1;
+}
+
+message UppercaseReply {
+  string v = 1;
+}
+service  Str{
+  rpc Count (CountRequest) returns (CountReply) {}
+  rpc Uppercase (UppercaseRequest) returns (UppercaseReply) {}
+}

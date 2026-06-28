@@ -8,7 +8,10 @@ import random
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
+from ..tracing import trace_node, trace_db_operation
 
+
+@trace_node("data_fetch")
 def data_fetch_node(
     state: Dict[str, Any],
     repository: Optional[Any] = None,

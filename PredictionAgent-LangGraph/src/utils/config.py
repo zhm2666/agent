@@ -16,7 +16,7 @@ MODEL = os.environ.get("OPENAI_MODEL", "kimi-k2.6")
 @dataclass
 class Config:
     default_llm_provider: str = "deepseek"
-    deepseek_api_key: Optional[str] = "sk-02912709a6df449c994e3eae7bf9844f"
+    deepseek_api_key: Optional[str] = "sk-0291"
     deepseek_model: str = "deepseek-v4-flash"
     openai_api_key: Optional[str] = None
     openai_model: str = "gpt-4o-mini"

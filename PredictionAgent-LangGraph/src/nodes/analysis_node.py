@@ -9,8 +9,10 @@ from typing import Any, Dict, List, Optional
 
 from ..llms.factory import create_llm_client
 from ..utils.config import load_config
+from ..tracing import trace_node, trace_llm_call
 
 
+@trace_node("analysis")
 def analysis_node(state: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
     """
     基于当前状态中的识别结果、数据、图表信息生成分析结果。
@@ -122,6 +124,7 @@ class _OpenAIClient:
         self.client = client
         self.model = model
 
+    @trace_llm_call("analysis.llm")
     def invoke(self, system_prompt: str, user_prompt: str, **kwargs) -> str:
         response = self.client.chat.completions.create(
             model=self.model,

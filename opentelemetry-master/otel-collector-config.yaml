@@ -1,0 +1,115 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+receivers:
+  # traces,metrics,logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Collect own metrics
+  prometheus:
+    config:
+      scrape_configs:
+      - job_name: 'otel-collector'
+        scrape_interval: 10s
+        static_configs:
+        - targets: ['localhost:8888']
+  prometheus/cus:
+    config:
+      scrape_configs:
+      - job_name: 'otel-collector-2'
+        scrape_interval: 10s
+        static_configs:
+        - targets: ['192.168.2.207:2223']
+
+  # traces
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_binary:
+      thrift_compact:
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+
+  # traces
+  zipkin:
+    endpoint: 0.0.0.0:9411
+
+processors:
+  # 批处理器,可处理 traces, metrics, logs
+  batch:
+    # 每个批次中可包含的数据包的数量,默认8192
+    send_batch_size: 8192
+    # 超时时间，默认200ms
+    timeout: 200ms
+    # 每个批次中所有数据包的大小之和,0表示不限制
+    send_batch_max_size: 0
+    # 设置后，此处理器将为client.Metadata中每个不同的值组合创建一个批处理程序实例
+    metadata_keys:
+    - host.name 
+    - method
+    # 当metadata_keys不为空时，此设置将限制在进程生命周期内处理的元数据键值的唯一组合的数量
+    # 元数据的每个不同组合都会触发在收集器中分配一个新的后台任务，该任务在进程的生命周期内运行，
+    # 并且每个后台任务都保存一批挂起的最多send_batch_size记录。因此，按元数据进行批处理可以显著增加专用于批处理的内存量。
+    # 不同组合的最大数量限制为配置的metadata_cardinality_limit，默认为1000以限制内存影响。
+    metadata_cardinality_limit: 1000
+  
+  # memory_limiter处理器允许对内存使用情况进行定期检查，如果超过定义的限制，将开始拒绝数据并强制GC减少内存消耗
+  # memory_limitter使用软内存和硬内存限制。硬限制总是高于或等于软限制
+  memory_limiter:
+    # 内存检查时间间隔
+    check_interval: 1s
+    # 进程堆目标分配的最大内存量（以MiB为单位）,即硬内存限制
+    limit_mib: 500 
+    # 内存使用量测量之间预期的最大峰值。该值必须小于limit_mib。
+    # 软限制值将等于（limit_mib-spike_limit_mib）。
+    # spike_limit_mib的推荐值约为limit_mib的20%
+    # 即进程内存使用量的波动范围，表示允许进程短时间内增加多少内存
+    spike_limit_mib: 100 
+    # 按百分比限制内存，固定内存设置（limit_mib）优先于百分比配置 
+    limit_percentage: 0
+    # 按百分比设置波动范围 
+    spike_limit_percentage: 0
+
+exporters:
+  otlp:
+    endpoint: 192.168.239.154:4317
+    tls:
+      insecure: true
+  otlphttp:
+    endpoint: http://192.168.239.154:4318 
+
+  jaeger:
+    endpoint: 192.168.239.154:14250
+    tls:
+      insecure: true
+      #cert_file: cert.pem
+      #key_file: cert-key.pem
+  zipkin:
+    endpoint: http://192.168.239.154:9411/api/v2/spans
+
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: default
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp,jaeger,zipkin]
+      processors: [memory_limiter,batch]
+      exporters: [otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter,batch]
+      exporters: [prometheus]
+  extensions: [health_check, pprof, zpages]

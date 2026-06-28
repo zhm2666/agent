@@ -12,7 +12,10 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
+from ..tracing import trace_node, trace_llm_call
 
+
+@trace_node("product_identification")
 def product_identification_node(
     state: Dict[str, Any],
     repository: Optional[Any] = None,
@@ -204,6 +207,7 @@ def _validate_and_enrich_result(
         ]
 
 
+@trace_llm_call("product_identification.llm")
 def _call_llm(system_prompt: str, user_prompt: str) -> str:
     """统一 LLM 调用，自动选择 DeepSeek 或 OpenAI。"""
     api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")

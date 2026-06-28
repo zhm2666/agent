@@ -1,0 +1,28 @@
+"""
+Protocol Buffer definitions for strsvc (string service).
+Defines Count and Uppercase RPC methods.
+"""
+syntax = "proto3";
+
+package strsvc;
+
+service Str {
+    rpc Count(CountRequest) returns (CountReply) {}
+    rpc Uppercase(UppercaseRequest) returns (UppercaseReply) {}
+}
+
+message CountRequest {
+    string str = 1;
+}
+
+message CountReply {
+    int64 v = 1;
+}
+
+message UppercaseRequest {
+    string str = 1;
+}
+
+message UppercaseReply {
+    string v = 1;
+}
