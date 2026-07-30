@@ -1,0 +1,266 @@
+[
+  {
+    "src": "https://huohuo90.com/images/light.png",
+    "alt": "",
+    "width": 1312,
+    "height": 1800,
+    "cls": "",
+    "parent": "banner-pic"
+  },
+  {
+    "src": "https://huohuo90.com/images/dark.png",
+    "alt": "",
+    "width": 1312,
+    "height": 1800,
+    "cls": "",
+    "parent": "banner-pic"
+  },
+  {
+    "src": "https://huohuo90.com/images/lyq.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "web-link-num"
+  },
+  {
+    "src": "https://huohuo90.com/images/elsfk.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "web-link-num"
+  },
+  {
+    "src": "https://huohuo90.com/images/ykd.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "web-link-num"
+  },
+  {
+    "src": "https://huohuo90.com/files/1769689921272.png",
+    "alt": "",
+    "width": 1733,
+    "height": 600,
+    "cls": "carousel-item__cover",
+    "parent": "carousel-item carousel-slide"
+  },
+  {
+    "src": "https://huohuo90.com/files/1736412304392.png",
+    "alt": "",
+    "width": 1733,
+    "height": 600,
+    "cls": "carousel-item__cover",
+    "parent": "carousel-item carousel-slide"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730194963224.png",
+    "alt": "",
+    "width": 1155,
+    "height": 400,
+    "cls": "carousel-item__cover",
+    "parent": "carousel-item carousel-slide"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730194869888.png",
+    "alt": "",
+    "width": 1155,
+    "height": 400,
+    "cls": "carousel-item__cover",
+    "parent": "carousel-item carousel-slide"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730194898125.png",
+    "alt": "",
+    "width": 1130,
+    "height": 400,
+    "cls": "carousel-item__cover",
+    "parent": "carousel-item carousel-slide"
+  },
+  {
+    "src": "https://huohuo90.com/files/1737122071259.jpg",
+    "alt": "",
+    "width": 1440,
+    "height": 1080,
+    "cls": "yk-image__img",
+    "parent": "yk-image product-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730124974492.jpg",
+    "alt": "",
+    "width": 800,
+    "height": 600,
+    "cls": "yk-image__img",
+    "parent": "yk-image product-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730124514106.jpg",
+    "alt": "",
+    "width": 1200,
+    "height": 900,
+    "cls": "yk-image__img",
+    "parent": "yk-image product-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/weather/thunderstorm.svg",
+    "alt": "",
+    "width": 24,
+    "height": 24,
+    "cls": "weather",
+    "parent": "yk-space size-s align-start justify-start"
+  },
+  {
+    "src": "https://huohuo90.com/files/1770733046818.jpg",
+    "alt": "",
+    "width": 1200,
+    "height": 868,
+    "cls": "yk-image__img",
+    "parent": "yk-image blog-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1758720581041.jpg",
+    "alt": "",
+    "width": 1201,
+    "height": 900,
+    "cls": "yk-image__img",
+    "parent": "yk-image blog-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1757855853548.jpg",
+    "alt": "",
+    "width": 1201,
+    "height": 900,
+    "cls": "yk-image__img",
+    "parent": "yk-image blog-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1757377173558.jpg",
+    "alt": "",
+    "width": 1201,
+    "height": 900,
+    "cls": "yk-image__img",
+    "parent": "yk-image blog-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1761357616260.jpg",
+    "alt": "",
+    "width": 2406,
+    "height": 1600,
+    "cls": "yk-image__img",
+    "parent": "yk-image"
+  },
+  {
+    "src": "https://huohuo90.com/files/1761357619687.jpg",
+    "alt": "",
+    "width": 2407,
+    "height": 1600,
+    "cls": "yk-image__img",
+    "parent": "yk-image"
+  },
+  {
+    "src": "https://huohuo90.com/files/1761357623973.jpg",
+    "alt": "",
+    "width": 2407,
+    "height": 1600,
+    "cls": "yk-image__img",
+    "parent": "yk-image"
+  },
+  {
+    "src": "https://huohuo90.com/files/1761357627408.jpg",
+    "alt": "",
+    "width": 2407,
+    "height": 1600,
+    "cls": "yk-image__img",
+    "parent": "yk-image"
+  },
+  {
+    "src": "https://huohuo90.com/files/1740496431424.jpg",
+    "alt": "",
+    "width": 800,
+    "height": 600,
+    "cls": "yk-image__img",
+    "parent": "yk-image resource-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1739881004715.jpg",
+    "alt": "",
+    "width": 1600,
+    "height": 1200,
+    "cls": "yk-image__img",
+    "parent": "yk-image resource-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730275470315.jpg",
+    "alt": "",
+    "width": 800,
+    "height": 600,
+    "cls": "yk-image__img",
+    "parent": "yk-image resource-item__cover"
+  },
+  {
+    "src": "https://huohuo90.com/files/1730275368603.jpg",
+    "alt": "",
+    "width": 800,
+    "height": 600,
+    "cls": "yk-image__img",
+    "parent": "yk-image resource-item__cover"
+  },
+  {
+    "src": "https://kiwi233.top/avatar.png",
+    "alt": "",
+    "width": 0,
+    "height": 0,
+    "cls": "links__logo",
+    "parent": "links-div"
+  },
+  {
+    "src": "https://blog.iooioio.com/upload/ZLXSTUDIO.png",
+    "alt": "",
+    "width": 852,
+    "height": 852,
+    "cls": "links__logo",
+    "parent": "links-div"
+  },
+  {
+    "src": "https://huohuo90.com/files/1732949612846.jpg",
+    "alt": "",
+    "width": 200,
+    "height": 200,
+    "cls": "links__logo",
+    "parent": "links-div"
+  },
+  {
+    "src": "https://huohuo90.com/images/lyq.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "yk-space align-start justify-start web-link"
+  },
+  {
+    "src": "https://huohuo90.com/images/elsfk.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "yk-space align-start justify-start web-link"
+  },
+  {
+    "src": "https://huohuo90.com/images/ykd.png",
+    "alt": "",
+    "width": 96,
+    "height": 96,
+    "cls": "",
+    "parent": "yk-space align-start justify-start web-link"
+  },
+  {
+    "src": "https://huohuo90.com/images/wxgzh.png",
+    "alt": "",
+    "width": 288,
+    "height": 288,
+    "cls": "wxgzh",
+    "parent": "yk-space align-center justify-start"
+  }
+]

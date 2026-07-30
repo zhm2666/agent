@@ -1,0 +1,707 @@
+{
+  "tag": "div",
+  "cls": "",
+  "id": "app",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 1440,
+    "h": 8996
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(11, 25, 38)",
+  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+  "text": "",
+  "children": [
+    {
+      "tag": "div",
+      "cls": "index-view",
+      "id": "",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 8510
+      },
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(11, 25, 38)",
+      "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+      "text": "",
+      "children": [
+        {
+          "tag": "div",
+          "cls": "top-bar",
+          "id": "",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1440,
+            "h": 64
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "svg",
+              "cls": "[object SVGAnimatedString]",
+              "id": "",
+              "rect": {
+                "x": 32,
+                "y": 18,
+                "w": 46,
+                "h": 28
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(10, 169, 219)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "path",
+                  "cls": "[object SVGAnimatedString]",
+                  "id": "",
+                  "rect": {
+                    "x": 38,
+                    "y": 21,
+                    "w": 35,
+                    "h": 22
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(10, 169, 219)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "tag": "div",
+              "cls": "yk-space align-start justify-start",
+              "id": "",
+              "rect": {
+                "x": 458,
+                "y": 20,
+                "w": 498,
+                "h": 23
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "a",
+                  "cls": "router-link-active router-link-exact-active",
+                  "id": "",
+                  "rect": {
+                    "x": 458,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 536,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 614,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 692,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 770,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 848,
+                    "y": 20,
+                    "w": 30,
+                    "h": 23
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(0, 0, 238)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "div",
+                  "cls": "yk-badge",
+                  "id": "",
+                  "rect": {
+                    "x": 926,
+                    "y": 24,
+                    "w": 30,
+                    "h": 15
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "tag": "div",
+              "cls": "yk-space size-s align-center justify-start",
+              "id": "",
+              "rect": {
+                "x": 1108,
+                "y": 11,
+                "w": 300,
+                "h": 42
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "div",
+                  "cls": "yk-input",
+                  "id": "",
+                  "rect": {
+                    "x": 1108,
+                    "y": 11,
+                    "w": 236,
+                    "h": 42
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "div",
+                  "cls": "yk-theme",
+                  "id": "",
+                  "rect": {
+                    "x": 1360,
+                    "y": 20,
+                    "w": 48,
+                    "h": 24
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "16px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "tag": "div",
+              "cls": "top-bar-bg",
+              "id": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "w": 1440,
+                "h": 64
+              },
+              "bg": "rgb(255, 255, 255)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "cls": "view-inner",
+          "id": "",
+          "rect": {
+            "x": 136,
+            "y": 0,
+            "w": 1240,
+            "h": 8510
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "div",
+              "cls": "home",
+              "id": "",
+              "rect": {
+                "x": 136,
+                "y": 0,
+                "w": 1240,
+                "h": 8510
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "div",
+                  "cls": "banner",
+                  "id": "",
+                  "rect": {
+                    "x": 136,
+                    "y": 0,
+                    "w": 1240,
+                    "h": 885
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "div",
+                  "cls": "yk-space dir-vertical align-start justify-start",
+                  "id": "",
+                  "rect": {
+                    "x": 136,
+                    "y": 909,
+                    "w": 1240,
+                    "h": 7601
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "cls": "yk-backtop",
+          "id": "",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "div",
+              "cls": "yk-backtop-container secondary",
+              "id": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "w": 0,
+                "h": 0
+              },
+              "bg": "rgb(239, 239, 239)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "svg",
+                  "cls": "[object SVGAnimatedString]",
+                  "id": "",
+                  "rect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "20px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "div",
+      "cls": "friend-link",
+      "id": "",
+      "rect": {
+        "x": 0,
+        "y": 8606,
+        "w": 1440,
+        "h": 174
+      },
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(11, 25, 38)",
+      "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+      "text": "",
+      "children": [
+        {
+          "tag": "div",
+          "cls": "link-inner",
+          "id": "",
+          "rect": {
+            "x": 0,
+            "y": 8634,
+            "w": 1440,
+            "h": 117
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "div",
+              "cls": "link-inner__title",
+              "id": "",
+              "rect": {
+                "x": 0,
+                "y": 8634,
+                "w": 1440,
+                "h": 51
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "svg",
+                  "cls": "[object SVGAnimatedString]",
+                  "id": "",
+                  "rect": {
+                    "x": 0,
+                    "y": 8639,
+                    "w": 30,
+                    "h": 20
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(10, 169, 219)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "p",
+                  "cls": "",
+                  "id": "",
+                  "rect": {
+                    "x": 30,
+                    "y": 8634,
+                    "w": 84,
+                    "h": 31
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "20px / 700 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "友情链接",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "tag": "div",
+              "cls": "links-div",
+              "id": "",
+              "rect": {
+                "x": 0,
+                "y": 8685,
+                "w": 1440,
+                "h": 66
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "a",
+                  "cls": "links",
+                  "id": "",
+                  "rect": {
+                    "x": 0,
+                    "y": 8685,
+                    "w": 348,
+                    "h": 66
+                  },
+                  "bg": "rgb(246, 246, 246)",
+                  "color": "rgba(11, 25, 38, 0.72)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "links",
+                  "id": "",
+                  "rect": {
+                    "x": 364,
+                    "y": 8685,
+                    "w": 348,
+                    "h": 66
+                  },
+                  "bg": "rgb(246, 246, 246)",
+                  "color": "rgba(11, 25, 38, 0.72)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "a",
+                  "cls": "links",
+                  "id": "",
+                  "rect": {
+                    "x": 728,
+                    "y": 8685,
+                    "w": 348,
+                    "h": 66
+                  },
+                  "bg": "rgb(246, 246, 246)",
+                  "color": "rgba(11, 25, 38, 0.72)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "div",
+      "cls": "foot-bar",
+      "id": "",
+      "rect": {
+        "x": 0,
+        "y": 8780,
+        "w": 1440,
+        "h": 216
+      },
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(11, 25, 38)",
+      "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+      "text": "",
+      "children": [
+        {
+          "tag": "div",
+          "cls": "foot-bar__main",
+          "id": "",
+          "rect": {
+            "x": 0,
+            "y": 8780,
+            "w": 1440,
+            "h": 160
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "div",
+              "cls": "main",
+              "id": "",
+              "rect": {
+                "x": 100,
+                "y": 8812,
+                "w": 1240,
+                "h": 96
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "div",
+                  "cls": "yk-space align-start justify-start web-link",
+                  "id": "",
+                  "rect": {
+                    "x": 100,
+                    "y": 8836,
+                    "w": 304,
+                    "h": 48
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "div",
+                  "cls": "yk-space size-xl align-center justify-start links",
+                  "id": "",
+                  "rect": {
+                    "x": 649,
+                    "y": 8844,
+                    "w": 104,
+                    "h": 32
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                },
+                {
+                  "tag": "div",
+                  "cls": "yk-space align-center justify-start",
+                  "id": "",
+                  "rect": {
+                    "x": 998,
+                    "y": 8812,
+                    "w": 342,
+                    "h": 96
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgb(11, 25, 38)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "p",
+          "cls": "foot-bar__beian",
+          "id": "",
+          "rect": {
+            "x": 0,
+            "y": 8940,
+            "w": 1440,
+            "h": 56
+          },
+          "bg": "rgba(0, 0, 0, 0)",
+          "color": "rgb(11, 25, 38)",
+          "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "text": "",
+          "children": [
+            {
+              "tag": "span",
+              "cls": "yk-text yk-text--secondary",
+              "id": "",
+              "rect": {
+                "x": 617,
+                "y": 8958,
+                "w": 75,
+                "h": 22
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgba(11, 25, 38, 0.72)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "备案/许可证",
+              "children": []
+            },
+            {
+              "tag": "span",
+              "cls": "yk-text",
+              "id": "",
+              "rect": {
+                "x": 692,
+                "y": 8958,
+                "w": 131,
+                "h": 22
+              },
+              "bg": "rgba(0, 0, 0, 0)",
+              "color": "rgb(11, 25, 38)",
+              "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+              "text": "",
+              "children": [
+                {
+                  "tag": "a",
+                  "cls": "beian",
+                  "id": "",
+                  "rect": {
+                    "x": 700,
+                    "y": 8959,
+                    "w": 123,
+                    "h": 19
+                  },
+                  "bg": "rgba(0, 0, 0, 0)",
+                  "color": "rgba(11, 25, 38, 0.72)",
+                  "font": "14px / 400 / Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+                  "text": "粤ICP备19012866号",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
